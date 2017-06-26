@@ -51,13 +51,13 @@ class Client implements ClientEntityInterface
      */
     protected $accessTokens;
 
-    /**
-     * @var ArrayCollection|Scope[]
-     *
-     * @ORM\ManyToMany(targetEntity="Scope")
-     * @ORM\JoinTable(name="oauth_client_scopes")
-     */
-    protected $scopes;
+//    /**
+//     * @var ArrayCollection|Scope[]
+//     *
+//     * @ORM\ManyToMany(targetEntity="Scope")
+//     * @ORM\JoinTable(name="oauth_client_scopes")
+//     */
+//    protected $scopes;
 
     /**
      * @param string $id

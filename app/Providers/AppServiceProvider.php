@@ -44,8 +44,6 @@ class AppServiceProvider extends ServiceProvider
                 $fileManager->drive()->get('keys/oauth.pub')       // path to public key
             );
 
-
-
             $grant = new PasswordGrant(
                 $app->make(UserRepository::class),           // instance of UserRepositoryInterface
                 $app->make(RefreshTokenRepository::class)    // instance of RefreshTokenRepositoryInterface

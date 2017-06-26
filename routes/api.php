@@ -20,3 +20,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'oauth'], function(\Illuminate\Routing\Router $router) {
     $router->post('token', 'OAuthController@issueAccessToken');
 });
+
+Route::group(['prefix' => 'saml', 'as' => 'saml.'], function(\Illuminate\Routing\Router $router) {
+    $router->get('idp/metadata', ['as' => 'idp.metadata','uses' => 'SAMLController@metadata']);
+    $router->post('idp/sso', ['as' => 'idp.sso','uses' => 'SAMLController@sso']);
+    $router->post('idp/slo', ['as' => 'idp.slo','uses' => 'SAMLController@slo']);
+});

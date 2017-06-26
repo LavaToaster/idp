@@ -14,8 +14,12 @@
         "laravel/tinker": "~1.0",
         "lavoaster/laravel-tactician": "dev-master",
         "league/oauth2-server": "^5.1",
+        "lightsaml/lightsaml": "^1.3",
+        "lightsaml/lightsaml-idp": "^1.0",
+        "lightsaml/lightsaml-logout": "^1.0",
         "paragonie/easyrsa": "^0.5.0",
         "paragonie/halite": "^3.2",
+        "paragonie/sodium_compat": "^1.0",
         "symfony/psr-http-message-bridge": "^1.0",
         "zendframework/zend-diactoros": "^1.4"
     },
