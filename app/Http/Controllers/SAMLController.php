@@ -3,16 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\SAML2\Bridge\BuildContainer;
-use Illuminate\Http\Request;
-use LightSaml\Binding\BindingFactory;
 use LightSaml\Builder\Profile\Metadata\MetadataProfileBuilder;
-use LightSaml\Context\Profile\MessageContext;
+use LightSaml\Idp\Builder\Action\Profile\SingleSignOn\Idp\SsoIdpAssertionActionBuilder;
+use LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpReceiveAuthnRequestProfileBuilder;
+use LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpSendResponseProfileBuilder;
+use LightSaml\Logout\Builder\Profile\WebBrowserSlo\SloRequestProfileBuilder;
 
 class SAMLController extends Controller
 {
-    public function metadata(BuildContainer $buildContainer)
+    /**
+     * @var BuildContainer
+     */
+    private $buildContainer;
+
+    public function __construct(BuildContainer $buildContainer)
     {
-        $builder = new MetadataProfileBuilder($buildContainer);
+        $this->buildContainer = $buildContainer;
+    }
+
+    public function metadata()
+    {
+        $builder = new MetadataProfileBuilder($this->buildContainer);
 
         $context = $builder->buildContext();
         $action = $builder->buildAction();
@@ -22,18 +33,46 @@ class SAMLController extends Controller
         return $context->getHttpResponseContext()->getResponse();
     }
 
-    public function sso(BindingFactory $bindingFactory, Request $request)
+    public function sso()
     {
-        $binding = $bindingFactory->getBindingByRequest($request);
+        $builder = new SsoIdpReceiveAuthnRequestProfileBuilder($this->buildContainer);
 
-        $messageContext = new MessageContext();
-        $binding->receive($request, $messageContext);
+        $context = $builder->buildContext();
+        $action = $builder->buildAction();
 
-        dd($messageContext->asAuthnRequest());
+        $action->execute($context);
+
+        $partyContext = $context->getPartyEntityContext();
+        $endpoint = $context->getEndpoint();
+        $message = $context->getInboundMessage();
+
+        $sendBuilder = new SsoIdpSendResponseProfileBuilder(
+            $this->buildContainer,
+            array(new SsoIdpAssertionActionBuilder($this->buildContainer)),
+            $partyContext->getEntityDescriptor()->getEntityID()
+        );
+        $sendBuilder->setPartyEntityDescriptor($partyContext->getEntityDescriptor());
+        $sendBuilder->setPartyTrustOptions($partyContext->getTrustOptions());
+        $sendBuilder->setEndpoint($endpoint);
+        $sendBuilder->setMessage($message);
+
+        $context = $sendBuilder->buildContext();
+        $action = $sendBuilder->buildAction();
+
+        $action->execute($context);
+
+        return $context->getHttpResponseContext()->getResponse();
     }
 
     public function slo()
     {
-        //
+//        $builder = new SloRequestProfileBuilder($this->buildContainer);
+//
+//        $context = $builder->buildContext();
+//        $action = $builder->buildAction();
+//
+//        $action->execute($context);
+//
+//        return $context->getHttpResponseContext()->getResponse();
     }
 }

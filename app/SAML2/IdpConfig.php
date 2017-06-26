@@ -20,17 +20,4 @@ class IdpConfig
         $this->buildContainer = $buildContainer;
     }
 
-    private function getOwnCredentials(): X509Credential
-    {
-        /** @var FilesystemManager $fs */
-        $fs = $this->buildContainer->getContainer()->make(FilesystemManager::class);
-
-        $credential = new X509Credential(
-            (new X509Certificate())->loadPem($fs->drive()->get('keys/saml.crt')),
-            KeyHelper::createPrivateKey($fs->drive()->get('keys/saml.key'), null)
-        );
-        $credential->setEntityId(route('saml.idp.metadata'));
-
-        return $credential;
-    }
 }
