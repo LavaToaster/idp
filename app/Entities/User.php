@@ -7,6 +7,10 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use LaravelDoctrine\Extensions\Timestamps\Timestamps;
 use LaravelDoctrine\ORM\Auth\Authenticatable as AuthenticatableTrait;
 use League\OAuth2\Server\Entities\UserEntityInterface;
+use const Sodium\CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE;
+use const Sodium\CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
+use function Sodium\crypto_pwhash_str;
+use function Sodium\crypto_pwhash_str_verify;
 
 /**
  * @ORM\Entity()
@@ -41,7 +45,7 @@ class User implements Authenticatable, UserEntityInterface
     public function __construct(string $id, string $email, string $password) {
         $this->id = $id;
         $this->email = $email;
-        $this->password = bcrypt($password);
+        $this->setPassword($password);
     }
 
     /**
@@ -89,7 +93,7 @@ class User implements Authenticatable, UserEntityInterface
      */
     public function setPassword(string $password)
     {
-        $this->password = bcrypt($password);
+        $this->password = crypto_pwhash_str($password, CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE, CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE);
     }
 
     /**
@@ -98,7 +102,7 @@ class User implements Authenticatable, UserEntityInterface
      */
     public function isValidPassword (string $password): bool
     {
-        return password_verify($password, $this->getPassword());
+        return crypto_pwhash_str_verify($this->getPassword(), $password);
     }
 
     /**
