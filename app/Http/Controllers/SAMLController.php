@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\SAML2\Bridge\BuildContainer;
+use Illuminate\Contracts\Session\Session;
+use Illuminate\Http\Request;
 use LightSaml\Builder\Profile\Metadata\MetadataProfileBuilder;
 use LightSaml\Idp\Builder\Action\Profile\SingleSignOn\Idp\SsoIdpAssertionActionBuilder;
 use LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpReceiveAuthnRequestProfileBuilder;
@@ -33,8 +35,19 @@ class SAMLController extends Controller
         return $context->getHttpResponseContext()->getResponse();
     }
 
-    public function sso()
+    public function sso(Session $session, Request $request)
     {
+        if ($request->isMethod('get') && $session->has('saml')) {
+            /** @var array $previousSamlRequest */
+            $previousSamlRequest = $session->get('saml');
+            $session->forget('saml-request');
+
+            $request->setMethod($previousSamlRequest['method']);
+            foreach ($previousSamlRequest['request'] as $key => $value) {
+                $request->request->set($key, $value);
+            }
+        }
+
         $builder = new SsoIdpReceiveAuthnRequestProfileBuilder($this->buildContainer);
 
         $context = $builder->buildContext();

@@ -64,6 +64,13 @@ class Handler extends ExceptionHandler
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
 
+        if ($request->routeIs('saml.idp.sso')) {
+            \Session::put('saml', [
+                'method' => $request->method(),
+                'request' => $request->request->all()
+            ]);
+        }
+
         return redirect()->guest(route('login'));
     }
 }

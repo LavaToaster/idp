@@ -242,8 +242,8 @@ class LightSamlServiceProvider extends ServiceProvider
 
     private function registerSystem()
     {
-        $this->app->bind(SystemContainer::REQUEST, function () {
-            return Request::createFromGlobals();
+        $this->app->bind(SystemContainer::REQUEST, function (Application $app) {
+            return $app->make('request');
         });
 
         $this->app->bind(SystemContainer::SESSION, function (Application $app) {
