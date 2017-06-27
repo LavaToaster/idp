@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Auth\UserProvider;
 use App\Repositories\OAuth\AccessTokenRepository;
 use App\Repositories\OAuth\ClientRepository;
 use App\Repositories\OAuth\RefreshTokenRepository;
@@ -10,6 +11,8 @@ use App\Repositories\UserRepository;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
+use LaravelDoctrine\ORM\Auth\DoctrineUserProvider;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Grant\PasswordGrant;
 
@@ -31,6 +34,31 @@ class AppServiceProvider extends ServiceProvider
      * @return void
      */
     public function register()
+    {
+        $this->extendAuthManager();
+        $this->registerOAuthServer();
+    }
+
+    protected function extendAuthManager()
+    {
+        $this->app->make('auth')->provider('doctrine-argon2i', function ($app, $config) {
+            $entity = $config['model'];
+
+            $em = $app['registry']->getManagerForClass($entity);
+
+            if (!$em) {
+                throw new InvalidArgumentException("No EntityManager is set-up for {$entity}");
+            }
+
+            return new UserProvider(
+                $app['hash'],
+                $em,
+                $entity
+            );
+        });
+    }
+
+    private function registerOAuthServer()
     {
         $this->app->bind(AuthorizationServer::class, function(Application $app) {
             $fileManager = $app->make(FilesystemManager::class);

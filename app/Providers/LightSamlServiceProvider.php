@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Entities\User;
 use App\SAML2\Bridge\OwnContainer;
 use App\SAML2\Bridge\PartyContainer;
 use App\SAML2\Bridge\ProviderContainer;
@@ -187,23 +188,22 @@ class LightSamlServiceProvider extends ServiceProvider
 
     private function registerProvider()
     {
-        $this->app->bind(ProviderContainer::ATTRIBUTE_VALUE_PROVIDER, function () {
+        $this->app->bind(ProviderContainer::ATTRIBUTE_VALUE_PROVIDER, function (Application $app) {
+            /** @var User $user */
+            $user = $app->make('auth.driver')->user();
+
             return (new FixedAttributeValueProvider())
                 ->add(new Attribute(
+                    ClaimTypes::PPID,
+                    $user->getId()
+                ))
+                ->add(new Attribute(
                     ClaimTypes::COMMON_NAME,
-                    'common-name'
-                ))
-                ->add(new Attribute(
-                    ClaimTypes::GIVEN_NAME,
-                    'first'
-                ))
-                ->add(new Attribute(
-                    ClaimTypes::SURNAME,
-                    'last'
+                    $user->getName()
                 ))
                 ->add(new Attribute(
                     ClaimTypes::EMAIL_ADDRESS,
-                    'somebody@example.com'
+                    $user->getEmail()
                 ));
         });
 

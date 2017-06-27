@@ -61,7 +61,7 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'doctrine',
+            'driver' => 'doctrine-argon2i',
             'model' => \App\Entities\User::class,
         ],
     ],

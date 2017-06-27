@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
 
         $user = new \App\Entities\User(
             $userId,
+            'Test',
             'test@test.com',
             'test'
         );

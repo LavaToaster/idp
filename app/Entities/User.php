@@ -33,6 +33,13 @@ class User implements Authenticatable, UserEntityInterface
      *
      * @ORM\Column(type="string")
      */
+    protected $name;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string")
+     */
     protected $email;
 
     /**
@@ -42,8 +49,9 @@ class User implements Authenticatable, UserEntityInterface
      */
     protected $password;
 
-    public function __construct(string $id, string $email, string $password) {
+    public function __construct(string $id, string $name, string $email, string $password) {
         $this->id = $id;
+        $this->name = $name;
         $this->email = $email;
         $this->setPassword($password);
     }
@@ -62,6 +70,30 @@ class User implements Authenticatable, UserEntityInterface
     public function setId(string $id)
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name)
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsername(): string
+    {
+        return $this->getEmail();
     }
 
     /**

@@ -14,3 +14,16 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
+
+Route::group(['prefix' => 'saml', 'as' => 'saml.'], function(\Illuminate\Routing\Router $router) {
+    $router->get('idp/metadata', ['as' => 'idp.metadata','uses' => 'SAMLController@metadata']);
+
+    $router->group(['middleware' => 'auth'], function(\Illuminate\Routing\Router $router) {
+        $router->post('idp/sso', ['as' => 'idp.sso', 'uses' => 'SAMLController@sso']);
+        $router->post('idp/slo', ['as' => 'idp.slo', 'uses' => 'SAMLController@slo']);
+    });
+});
