@@ -24,6 +24,7 @@ Route::group(['prefix' => 'saml', 'as' => 'saml.'], function(\Illuminate\Routing
 
     $router->group(['middleware' => 'auth'], function(\Illuminate\Routing\Router $router) {
         $router->match(['get', 'post'], 'idp/sso', ['as' => 'idp.sso', 'uses' => 'SAMLController@sso']);
+        $router->get('idp/init', ['as' => 'idp.init', 'uses' => 'SAMLController@init']);
         $router->post('idp/slo', ['as' => 'idp.slo', 'uses' => 'SAMLController@slo']);
     });
 });

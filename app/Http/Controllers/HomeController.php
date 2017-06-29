@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\SAML2\Bridge\PartyContainer;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -21,8 +22,12 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(PartyContainer $partyContainer)
     {
-        return view('home');
+        $serviceProviderEntities = $partyContainer->getSpEntityDescriptorStore()->all();
+
+        return view('home', [
+            'serviceProviderEntities' => $serviceProviderEntities
+        ]);
     }
 }

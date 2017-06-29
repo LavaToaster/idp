@@ -35,6 +35,44 @@ class SAMLController extends Controller
         return $context->getHttpResponseContext()->getResponse();
     }
 
+    public function init(Request $request)
+    {
+        $spEntityId = $request->query('sp');
+
+        $spEntityDescriptor = $this->buildContainer->getPartyContainer()->getSpEntityDescriptorStore()->get($spEntityId);
+
+        $criteriaSet = new \LightSaml\Criteria\CriteriaSet([
+            new \LightSaml\Resolver\Endpoint\Criteria\BindingCriteria([\LightSaml\SamlConstants::BINDING_SAML2_HTTP_POST]),
+            new \LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria(\LightSaml\Model\Metadata\SpSsoDescriptor::class),
+            new \LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria(\LightSaml\Model\Metadata\AssertionConsumerService::class)
+        ]);
+
+        $arrEndpoints = $this->buildContainer->getServiceContainer()->getEndpointResolver()->resolve($criteriaSet, $spEntityDescriptor->getAllEndpoints());
+
+        if (empty($arrEndpoints)) {
+            throw new \RuntimeException(sprintf('SP party "%s" does not have any SP ACS endpoint defined', $spEntityId));
+        }
+
+        $endpoint = $arrEndpoints[0]->getEndpoint();
+        $trustOptions = $this->buildContainer->getPartyContainer()->getTrustOptionsStore()->get($spEntityId);
+
+        $sendBuilder = new \LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpSendResponseProfileBuilder(
+            $this->buildContainer,
+            array(new \LightSaml\Idp\Builder\Action\Profile\SingleSignOn\Idp\SsoIdpAssertionActionBuilder($this->buildContainer)),
+            $spEntityId
+        );
+        $sendBuilder->setPartyEntityDescriptor($spEntityDescriptor);
+        $sendBuilder->setPartyTrustOptions($trustOptions);
+        $sendBuilder->setEndpoint($endpoint);
+
+        $context = $sendBuilder->buildContext();
+        $action = $sendBuilder->buildAction();
+
+        $action->execute($context);
+
+        return $context->getHttpResponseContext()->getResponse();
+    }
+
     public function sso(Session $session, Request $request)
     {
         if ($request->isMethod('get') && $session->has('saml')) {
