@@ -234,8 +234,16 @@ class LightSamlServiceProvider extends ServiceProvider
                     $user->getId()
                 ))
                 ->add(new Attribute(
-                    ClaimTypes::COMMON_NAME,
-                    $user->getName()
+                    ClaimTypes::NAME,
+                    $user->getFirstName()
+                ))
+                ->add(new Attribute(
+                    ClaimTypes::GIVEN_NAME,
+                    $user->getFirstName()
+                ))
+                ->add(new Attribute(
+                    ClaimTypes::SURNAME,
+                    $user->getLastName()
                 ))
                 ->add(new Attribute(
                     ClaimTypes::EMAIL_ADDRESS,

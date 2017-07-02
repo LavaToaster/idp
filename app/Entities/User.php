@@ -33,7 +33,7 @@ class User implements Authenticatable, UserEntityInterface
      *
      * @ORM\Column(type="string")
      */
-    protected $name;
+    protected $username;
 
     /**
      * @var string
@@ -47,11 +47,27 @@ class User implements Authenticatable, UserEntityInterface
      *
      * @ORM\Column(type="string")
      */
+    protected $firstName;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string")
+     */
+    protected $lastName;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string")
+     */
     protected $password;
 
-    public function __construct(string $id, string $name, string $email, string $password) {
+    public function __construct(string $id, string $username, string $firstName, string $lastName, string $email, string $password) {
         $this->id = $id;
-        $this->name = $name;
+        $this->username = $username;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
         $this->email = $email;
         $this->setPassword($password);
     }
@@ -75,17 +91,38 @@ class User implements Authenticatable, UserEntityInterface
     /**
      * @return string
      */
-    public function getName(): string
+    public function getFirstName(): string
     {
-        return $this->name;
+        return $this->firstName;
     }
 
     /**
-     * @param string $name
+     * @param string $firstName
      */
-    public function setName(string $name)
+    public function setFirstName(string $firstName)
     {
-        $this->name = $name;
+        $this->firstName = $firstName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+
+    /**
+     * @param string $lastName
+     */
+    public function setLastName(string $lastName)
+    {
+        $this->lastName = $lastName;
+    }
+
+    public function getName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
     }
 
     /**
