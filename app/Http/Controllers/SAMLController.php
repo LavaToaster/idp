@@ -56,9 +56,9 @@ class SAMLController extends Controller
         $endpoint = $arrEndpoints[0]->getEndpoint();
         $trustOptions = $this->buildContainer->getPartyContainer()->getTrustOptionsStore()->get($spEntityId);
 
-        $sendBuilder = new \LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpSendResponseProfileBuilder(
+        $sendBuilder = new SsoIdpSendResponseProfileBuilder(
             $this->buildContainer,
-            array(new \LightSaml\Idp\Builder\Action\Profile\SingleSignOn\Idp\SsoIdpAssertionActionBuilder($this->buildContainer)),
+            array(new SsoIdpAssertionActionBuilder($this->buildContainer)),
             $spEntityId
         );
         $sendBuilder->setPartyEntityDescriptor($spEntityDescriptor);

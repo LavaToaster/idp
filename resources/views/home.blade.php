@@ -8,13 +8,18 @@
                 <div class="panel-heading">Dashboard</div>
 
                 <div class="panel-body">
+
+                    <ui class="nav nav-pills nav-stacked">
                     @foreach($serviceProviderEntities as $serviceProviderEntity)
                         <?php /** @var \LightSaml\Model\Metadata\EntityDescriptor $serviceProviderEntity */ ?>
 
-                        <a href="{{ route('saml.idp.init', ['sp' => $serviceProviderEntity->getEntityID()]) }}">
-                            {{ $serviceProviderEntity->getEntityID() }}
-                        </a>
+                        <li>
+                            <a href="{{ route('saml.idp.init', ['sp' => $serviceProviderEntity->getEntityID()]) }}">
+                                {{ $serviceProviderEntity->getEntityID() }}
+                            </a>
+                        </li>
                     @endforeach
+                    </ui>
                 </div>
             </div>
         </div>
