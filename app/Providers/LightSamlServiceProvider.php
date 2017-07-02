@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use App\SAML2\Bridge\OwnContainer;
-use App\SAML2\Bridge\PartyContainer;
-use App\SAML2\Bridge\ProviderContainer;
-use App\SAML2\Bridge\ServiceContainer;
-use App\SAML2\Bridge\StoreContainer;
-use App\SAML2\Bridge\SystemContainer;
+use App\SAML2\Bridge\Container\OwnContainer;
+use App\SAML2\Bridge\Container\PartyContainer;
+use App\SAML2\Bridge\Container\ProviderContainer;
+use App\SAML2\Bridge\Container\ServiceContainer;
+use App\SAML2\Bridge\Container\StoreContainer;
+use App\SAML2\Bridge\Container\SystemContainer;
 use App\SAML2\Builder\AttributeValueProviderBuilder;
 use App\SAML2\Builder\NameIdValueProviderBuilder;
 use App\SAML2\Session\SsoStateSessionStore;

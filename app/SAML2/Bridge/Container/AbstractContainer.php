@@ -1,6 +1,6 @@
 <?php
 
-namespace App\SAML2\Bridge;
+namespace App\SAML2\Bridge\Container;
 
 use Illuminate\Contracts\Container\Container as LaravelContainer;
 

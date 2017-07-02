@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\SAML2\Bridge\BuildContainer;
+use App\SAML2\Bridge\Container\BuildContainer;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use LightSaml\Builder\Profile\Metadata\MetadataProfileBuilder;
 use LightSaml\Idp\Builder\Action\Profile\SingleSignOn\Idp\SsoIdpAssertionActionBuilder;
 use LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpReceiveAuthnRequestProfileBuilder;
 use LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpSendResponseProfileBuilder;
-use LightSaml\Logout\Builder\Profile\WebBrowserSlo\SloRequestProfileBuilder;
 
 class SAMLController extends Controller
 {

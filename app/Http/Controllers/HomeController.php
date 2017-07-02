@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\SAML2\Bridge\PartyContainer;
-use Illuminate\Http\Request;
+use App\SAML2\Bridge\Container\PartyContainer;
 use LightSaml\Model\Metadata\EntityDescriptor;
 
 class HomeController extends Controller

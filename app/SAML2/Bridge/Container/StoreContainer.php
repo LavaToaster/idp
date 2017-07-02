@@ -1,8 +1,7 @@
 <?php
 
-namespace App\SAML2\Bridge;
+namespace App\SAML2\Bridge\Container;
 
-use LightSaml\Bridge\Pimple\Container\AbstractPimpleContainer;
 use LightSaml\Build\Container\StoreContainerInterface;
 
 class StoreContainer extends AbstractContainer implements StoreContainerInterface
