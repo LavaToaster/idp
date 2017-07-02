@@ -10,7 +10,7 @@ return [
         'email' => 'admin@example.com',
     ],
 
-    'sp' => [
-//        ''
+    'providers' => [
+        //
     ]
 ];

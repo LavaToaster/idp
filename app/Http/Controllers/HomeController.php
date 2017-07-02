@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\SAML2\Bridge\PartyContainer;
 use Illuminate\Http\Request;
+use LightSaml\Model\Metadata\EntityDescriptor;
 
 class HomeController extends Controller
 {
@@ -24,7 +25,9 @@ class HomeController extends Controller
      */
     public function index(PartyContainer $partyContainer)
     {
-        $serviceProviderEntities = $partyContainer->getSpEntityDescriptorStore()->all();
+        $serviceProviderEntities = array_filter($partyContainer->getSpEntityDescriptorStore()->all(), function(EntityDescriptor $entityDescriptor) {
+            return count($entityDescriptor->getAllSpSsoDescriptors()) > 0;
+        });
 
         return view('home', [
             'serviceProviderEntities' => $serviceProviderEntities

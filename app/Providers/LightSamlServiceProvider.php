@@ -25,6 +25,7 @@ use LightSaml\Logout\Resolver\Logout\LogoutSessionResolver;
 use LightSaml\Meta\TrustOptions\TrustOptions;
 use LightSaml\Model\Assertion\Attribute;
 use LightSaml\Model\Assertion\NameID;
+use LightSaml\Model\Metadata\EntitiesDescriptor;
 use LightSaml\Model\Metadata\EntityDescriptor;
 use LightSaml\Provider\Attribute\FixedAttributeValueProvider;
 use LightSaml\Provider\NameID\FixedNameIdProvider;
@@ -117,10 +118,16 @@ class LightSamlServiceProvider extends ServiceProvider
         $this->app->bind(PartyContainer::SP_ENTITY_DESCRIPTOR, function (Application $app) {
             $idpProvider = new FixedEntityDescriptorStore();
 
-            foreach ($app->make('config')->get('saml.sp', []) as $sp) {
-                $idpProvider->add(
-                    EntityDescriptor::loadXml($sp)
-                );
+            foreach ($app->make('config')->get('saml.providers', []) as $provider) {
+                $entityDescriptor = null;
+
+                if (str_contains($provider, 'EntitiesDescriptor')) {
+                    $entityDescriptor = EntitiesDescriptor::loadXml($provider);
+                } else {
+                    $entityDescriptor = EntityDescriptor::loadXml($provider);
+                }
+
+                $idpProvider->add($entityDescriptor);
             }
 
             return $idpProvider;
