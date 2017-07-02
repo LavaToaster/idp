@@ -196,7 +196,7 @@ class LightSamlServiceProvider extends ServiceProvider
             /** @var EntityDescriptorProviderInterface $ownEntityDescriptor */
             $ownEntityDescriptor = $app->make(OwnContainer::OWN_ENTITY_DESCRIPTOR_PROVIDER);
 
-            return new AttributeValueProviderBuilder(
+            return new NameIdValueProviderBuilder(
                 $app->make('auth.driver'),
                 $ownEntityDescriptor->get()
             );
