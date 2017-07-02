@@ -9,6 +9,7 @@ use App\SAML2\Bridge\ProviderContainer;
 use App\SAML2\Bridge\ServiceContainer;
 use App\SAML2\Bridge\StoreContainer;
 use App\SAML2\Bridge\SystemContainer;
+use App\SAML2\Provider\AttributeValueProviderBuilder;
 use App\SAML2\Session\SsoStateSessionStore;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Filesystem\FilesystemManager;
@@ -225,30 +226,7 @@ class LightSamlServiceProvider extends ServiceProvider
     private function registerProvider()
     {
         $this->app->bind(ProviderContainer::ATTRIBUTE_VALUE_PROVIDER, function (Application $app) {
-            /** @var User $user */
-            $user = $app->make('auth.driver')->user();
-
-            return (new FixedAttributeValueProvider())
-                ->add(new Attribute(
-                    ClaimTypes::PPID,
-                    $user->getId()
-                ))
-                ->add(new Attribute(
-                    ClaimTypes::NAME,
-                    $user->getFirstName()
-                ))
-                ->add(new Attribute(
-                    ClaimTypes::GIVEN_NAME,
-                    $user->getFirstName()
-                ))
-                ->add(new Attribute(
-                    ClaimTypes::SURNAME,
-                    $user->getLastName()
-                ))
-                ->add(new Attribute(
-                    ClaimTypes::EMAIL_ADDRESS,
-                    $user->getEmail()
-                ));
+            return (new AttributeValueProviderBuilder($app->make('auth.driver')))->build();
         });
 
         $this->app->bind(ProviderContainer::SESSION_INFO_PROVIDER, function () {
