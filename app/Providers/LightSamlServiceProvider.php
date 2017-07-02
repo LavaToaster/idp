@@ -11,7 +11,9 @@ use App\SAML2\Bridge\StoreContainer;
 use App\SAML2\Bridge\SystemContainer;
 use App\SAML2\Provider\AttributeValueProviderBuilder;
 use App\SAML2\Session\SsoStateSessionStore;
+use App\SAML2\Store\EntityDescriptorStoreBuilder;
 use Illuminate\Contracts\Session\Session;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -124,43 +126,10 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(PartyContainer::SP_ENTITY_DESCRIPTOR, function (Application $app) {
-            /** @var FilesystemManager $fs */
             $fs = $app->make(FilesystemManager::class);
             $drive = $fs->drive(config('saml.disk'));
 
-            $idpProvider = new FixedEntityDescriptorStore();
-
-            $xml = [];
-
-            foreach ($app->make('config')->get('saml.providers', []) as $provider) {
-                $xml[] = $provider;
-            }
-
-            if ($drive->exists('providers')) {
-                foreach($drive->files('providers') as $provider) {
-                    $fileInfo = pathinfo($provider);
-
-                    if ($fileInfo['extension'] !== 'xml') {
-                        continue;
-                    }
-
-                    $xml[] = $drive->get($provider);
-                }
-            }
-
-            foreach ($xml as $provider) {
-                $entityDescriptor = null;
-
-                if (str_contains($provider, 'EntitiesDescriptor')) {
-                    $entityDescriptor = EntitiesDescriptor::loadXml($provider);
-                } else {
-                    $entityDescriptor = EntityDescriptor::loadXml($provider);
-                }
-
-                $idpProvider->add($entityDescriptor);
-            }
-
-            return $idpProvider;
+            return (new EntityDescriptorStoreBuilder($drive))->build();
         });
 
         $this->app->bind(PartyContainer::TRUST_OPTIONS_STORE, function () {
