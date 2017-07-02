@@ -10,6 +10,8 @@ return [
         'email' => 'admin@example.com',
     ],
 
+    'disk' => 'local',
+
     'providers' => [
         //
     ]

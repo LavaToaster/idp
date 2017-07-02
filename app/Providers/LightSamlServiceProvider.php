@@ -52,9 +52,9 @@ use LightSaml\Validator\Model\NameId\NameIdValidator;
 use LightSaml\Validator\Model\Signature\SignatureValidator;
 use LightSaml\Validator\Model\Statement\StatementValidator;
 use LightSaml\Validator\Model\Subject\SubjectValidator;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\HttpFoundation\Request;
 
 class LightSamlServiceProvider extends ServiceProvider
 {
@@ -72,11 +72,13 @@ class LightSamlServiceProvider extends ServiceProvider
     private function registerOwn()
     {
         $this->app->bind(OwnContainer::OWN_CREDENTIALS, function (Application $app) {
+            /** @var FilesystemManager $fs */
             $fs = $app->make(FilesystemManager::class);
+            $drive = $fs->drive(config('saml.disk'));
 
             $credential = (new X509Credential(
-                (new X509Certificate())->loadPem($fs->drive()->get('keys/saml.crt')),
-                KeyHelper::createPrivateKey($fs->drive()->get('keys/saml.key'), null)
+                (new X509Certificate())->loadPem($drive->get('keys/saml.crt')),
+                KeyHelper::createPrivateKey($drive->get('keys/saml.key'), null)
             ))
                 ->setEntityId($app->make('url')->route('saml.idp.metadata'));
 
@@ -87,12 +89,17 @@ class LightSamlServiceProvider extends ServiceProvider
             /** @var X509Credential[] $credentials */
             $credentials = $app->make(OwnContainer::OWN_CREDENTIALS);
 
-            return new SimpleEntityDescriptorBuilder(
+            $builder = new SimpleEntityDescriptorBuilder(
                 $app->make('url')->route('saml.idp.metadata'),
                 null,
                 $app->make('url')->route('saml.idp.sso'),
                 $credentials[0]->getCertificate()
             );
+
+            $entityDescriptor = $builder->get();
+            $entityDescriptor->getFirstIdpSsoDescriptor()->addNameIDFormat(SamlConstants::NAME_ID_FORMAT_EMAIL);
+
+            return $builder;
         });
     }
 
@@ -223,10 +230,17 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(ProviderContainer::NAME_ID_PROVIDER, function (Application $app) {
-            $nameId = new NameID('name@id.com');
+            $nameId = new NameID();
             $nameId
                 ->setFormat(SamlConstants::NAME_ID_FORMAT_EMAIL)
                 ->setNameQualifier($app->make(OwnContainer::OWN_ENTITY_DESCRIPTOR_PROVIDER)->get()->getEntityID());
+
+            /** @var User $user */
+            $user = $app->make('auth.driver')->user();
+
+            if (null !== $user) {
+                $nameId->setValue($user->getEmail());
+            }
 
             return new FixedNameIdProvider($nameId);
         });
@@ -265,8 +279,6 @@ class LightSamlServiceProvider extends ServiceProvider
             return new EventDispatcher();
         });
 
-        $this->app->bind(SystemContainer::LOGGER, function () {
-            return new NullLogger();
-        });
+        $this->app->bind(SystemContainer::LOGGER, LoggerInterface::class);
     }
 }

@@ -35,7 +35,7 @@ class CertKeys extends Command
     {
         $this->output->title('OAuth Key Generation');
 
-        $drive = $filesystem->drive();
+        $drive = $filesystem->drive(config('saml.disk'));
 
         if ($drive->exists('keys/saml.key') && false === $this->option('overwrite')) {
             $this->output->error('Keys already exist.');
