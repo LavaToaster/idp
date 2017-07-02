@@ -123,9 +123,31 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(PartyContainer::SP_ENTITY_DESCRIPTOR, function (Application $app) {
+            /** @var FilesystemManager $fs */
+            $fs = $app->make(FilesystemManager::class);
+            $drive = $fs->drive(config('saml.disk'));
+
             $idpProvider = new FixedEntityDescriptorStore();
 
+            $xml = [];
+
             foreach ($app->make('config')->get('saml.providers', []) as $provider) {
+                $xml[] = $provider;
+            }
+
+            if ($drive->exists('providers')) {
+                foreach($drive->files('providers') as $provider) {
+                    $fileInfo = pathinfo($provider);
+
+                    if ($fileInfo['extension'] !== 'xml') {
+                        continue;
+                    }
+
+                    $xml[] = $drive->get($provider);
+                }
+            }
+
+            foreach ($xml as $provider) {
                 $entityDescriptor = null;
 
                 if (str_contains($provider, 'EntitiesDescriptor')) {
