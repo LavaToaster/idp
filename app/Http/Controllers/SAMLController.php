@@ -6,9 +6,16 @@ use App\SAML2\Bridge\Container\BuildContainer;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use LightSaml\Builder\Profile\Metadata\MetadataProfileBuilder;
+use LightSaml\Criteria\CriteriaSet;
 use LightSaml\Idp\Builder\Action\Profile\SingleSignOn\Idp\SsoIdpAssertionActionBuilder;
 use LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpReceiveAuthnRequestProfileBuilder;
 use LightSaml\Idp\Builder\Profile\WebBrowserSso\Idp\SsoIdpSendResponseProfileBuilder;
+use LightSaml\Model\Metadata\AssertionConsumerService;
+use LightSaml\Model\Metadata\SpSsoDescriptor;
+use LightSaml\Resolver\Endpoint\Criteria\BindingCriteria;
+use LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria;
+use LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria;
+use LightSaml\SamlConstants;
 
 class SAMLController extends Controller
 {
@@ -40,10 +47,10 @@ class SAMLController extends Controller
 
         $spEntityDescriptor = $this->buildContainer->getPartyContainer()->getSpEntityDescriptorStore()->get($spEntityId);
 
-        $criteriaSet = new \LightSaml\Criteria\CriteriaSet([
-            new \LightSaml\Resolver\Endpoint\Criteria\BindingCriteria([\LightSaml\SamlConstants::BINDING_SAML2_HTTP_POST]),
-            new \LightSaml\Resolver\Endpoint\Criteria\DescriptorTypeCriteria(\LightSaml\Model\Metadata\SpSsoDescriptor::class),
-            new \LightSaml\Resolver\Endpoint\Criteria\ServiceTypeCriteria(\LightSaml\Model\Metadata\AssertionConsumerService::class)
+        $criteriaSet = new CriteriaSet([
+            new BindingCriteria([SamlConstants::BINDING_SAML2_HTTP_POST]),
+            new DescriptorTypeCriteria(SpSsoDescriptor::class),
+            new ServiceTypeCriteria(AssertionConsumerService::class)
         ]);
 
         $arrEndpoints = $this->buildContainer->getServiceContainer()->getEndpointResolver()->resolve($criteriaSet, $spEntityDescriptor->getAllEndpoints());
