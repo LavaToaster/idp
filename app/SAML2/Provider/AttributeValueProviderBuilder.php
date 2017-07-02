@@ -18,7 +18,7 @@ class AttributeValueProviderBuilder
     /**
      * @var FixedAttributeValueProvider
      */
-    protected $attributeValueProvider;
+    protected $provider;
 
     public function __construct(Guard $guard)
     {
@@ -30,14 +30,14 @@ class AttributeValueProviderBuilder
      */
     public function build(): FixedAttributeValueProvider
     {
-        if ($this->attributeValueProvider) {
-            return $this->attributeValueProvider;
+        if ($this->provider) {
+            return $this->provider;
         }
 
         $provider = new FixedAttributeValueProvider();
         $provider->setAttributes($this->getMapping());
 
-        return $this->attributeValueProvider = $provider;
+        return $this->provider = $provider;
     }
     
     protected function getUser(): User
