@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Entities\User;
 use App\SAML2\Bridge\OwnContainer;
 use App\SAML2\Bridge\PartyContainer;
 use App\SAML2\Bridge\ProviderContainer;
@@ -10,28 +9,22 @@ use App\SAML2\Bridge\ServiceContainer;
 use App\SAML2\Bridge\StoreContainer;
 use App\SAML2\Bridge\SystemContainer;
 use App\SAML2\Provider\AttributeValueProviderBuilder;
+use App\SAML2\Provider\NameIdValueProviderBuilder;
 use App\SAML2\Session\SsoStateSessionStore;
 use App\SAML2\Store\EntityDescriptorStoreBuilder;
 use Illuminate\Contracts\Session\Session;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use LightSaml\Binding\BindingFactory;
 use LightSaml\Bridge\Pimple\Container\CredentialContainer;
 use LightSaml\Builder\EntityDescriptor\SimpleEntityDescriptorBuilder;
-use LightSaml\ClaimTypes;
 use LightSaml\Credential\KeyHelper;
 use LightSaml\Credential\X509Certificate;
 use LightSaml\Credential\X509Credential;
 use LightSaml\Logout\Resolver\Logout\LogoutSessionResolver;
 use LightSaml\Meta\TrustOptions\TrustOptions;
-use LightSaml\Model\Assertion\Attribute;
-use LightSaml\Model\Assertion\NameID;
-use LightSaml\Model\Metadata\EntitiesDescriptor;
-use LightSaml\Model\Metadata\EntityDescriptor;
-use LightSaml\Provider\Attribute\FixedAttributeValueProvider;
-use LightSaml\Provider\NameID\FixedNameIdProvider;
+use LightSaml\Provider\EntityDescriptor\EntityDescriptorProviderInterface;
 use LightSaml\Provider\Session\FixedSessionInfoProvider;
 use LightSaml\Provider\TimeProvider\SystemTimeProvider;
 use LightSaml\Resolver\Credential\Factory\CredentialResolverFactory;
@@ -56,7 +49,6 @@ use LightSaml\Validator\Model\Signature\SignatureValidator;
 use LightSaml\Validator\Model\Statement\StatementValidator;
 use LightSaml\Validator\Model\Subject\SubjectValidator;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class LightSamlServiceProvider extends ServiceProvider
@@ -194,8 +186,24 @@ class LightSamlServiceProvider extends ServiceProvider
 
     private function registerProvider()
     {
+        $this->app->bind(AttributeValueProviderBuilder::class, function (Application $app) {
+            return new AttributeValueProviderBuilder(
+                $app->make('auth.driver')
+            );
+        });
+
+        $this->app->bind(NameIdValueProviderBuilder::class, function (Application $app) {
+            /** @var EntityDescriptorProviderInterface $ownEntityDescriptor */
+            $ownEntityDescriptor = $app->make(OwnContainer::OWN_ENTITY_DESCRIPTOR_PROVIDER);
+
+            return new AttributeValueProviderBuilder(
+                $app->make('auth.driver'),
+                $ownEntityDescriptor->get()
+            );
+        });
+
         $this->app->bind(ProviderContainer::ATTRIBUTE_VALUE_PROVIDER, function (Application $app) {
-            return (new AttributeValueProviderBuilder($app->make('auth.driver')))->build();
+            return $app->make(AttributeValueProviderBuilder::class)->build();
         });
 
         $this->app->bind(ProviderContainer::SESSION_INFO_PROVIDER, function () {
@@ -207,19 +215,7 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(ProviderContainer::NAME_ID_PROVIDER, function (Application $app) {
-            $nameId = new NameID();
-            $nameId
-                ->setFormat(SamlConstants::NAME_ID_FORMAT_EMAIL)
-                ->setNameQualifier($app->make(OwnContainer::OWN_ENTITY_DESCRIPTOR_PROVIDER)->get()->getEntityID());
-
-            /** @var User $user */
-            $user = $app->make('auth.driver')->user();
-
-            if (null !== $user) {
-                $nameId->setValue($user->getEmail());
-            }
-
-            return new FixedNameIdProvider($nameId);
+            return $app->make(NameIdValueProviderBuilder::class)->build();
         });
     }
 

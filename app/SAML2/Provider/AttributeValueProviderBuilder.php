@@ -15,11 +15,6 @@ class AttributeValueProviderBuilder
      */
     protected $guard;
 
-    /**
-     * @var FixedAttributeValueProvider
-     */
-    protected $provider;
-
     public function __construct(Guard $guard)
     {
         $this->guard = $guard;
@@ -30,23 +25,19 @@ class AttributeValueProviderBuilder
      */
     public function build(): FixedAttributeValueProvider
     {
-        if ($this->provider) {
-            return $this->provider;
-        }
-
-        $provider = new FixedAttributeValueProvider();
-        $provider->setAttributes($this->getMapping());
-
-        return $this->provider = $provider;
+        return (new FixedAttributeValueProvider())
+            ->setAttributes($this->getMapping());
     }
-    
+
     protected function getUser(): User
     {
         $user = $this->guard->user();
-        
+
         if ($user instanceof User) {
             return $user;
         }
+
+        return null;
     }
 
     /**
@@ -55,7 +46,7 @@ class AttributeValueProviderBuilder
     protected function getMapping(): array
     {
         $user = $this->getUser();
-        
+
         return [
             new Attribute(
                 ClaimTypes::PPID,
