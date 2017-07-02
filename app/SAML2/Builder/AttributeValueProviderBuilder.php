@@ -1,6 +1,6 @@
 <?php
 
-namespace App\SAML2\Provider;
+namespace App\SAML2\Builder;
 
 use App\Entities\User;
 use Illuminate\Contracts\Auth\Guard;
