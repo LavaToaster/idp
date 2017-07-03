@@ -140,7 +140,7 @@ class LightSamlServiceProvider extends ServiceProvider
             // the trust options for certain entities
             //
             // I think I saw somewhere, possibly Canvas LMS, that it never had any keys for encryption or signing
-            // which meant that you'd have to disable assertion encryption here.
+            // which meant that you'd have to disable assertion encryption here. UPDATE: Can Confirm.
             //
             // FWIW I could be mistaken in my understanding. Will have to verify by setting up Canvas
             // and seeing if it works with this code.
