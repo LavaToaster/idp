@@ -8,8 +8,8 @@ use App\SAML2\Bridge\Container\ProviderContainer;
 use App\SAML2\Bridge\Container\ServiceContainer;
 use App\SAML2\Bridge\Container\StoreContainer;
 use App\SAML2\Bridge\Container\SystemContainer;
-use App\SAML2\Builder\AttributeValueProviderBuilder;
-use App\SAML2\Builder\NameIdValueProviderBuilder;
+use App\SAML2\Factory\AttributeValueProviderFactory;
+use App\SAML2\Factory\NameIdValueProviderFactory;
 use App\SAML2\Session\SsoStateSessionStore;
 use App\SAML2\Store\EntityDescriptorStoreBuilder;
 use Illuminate\Contracts\Session\Session;
@@ -68,7 +68,7 @@ class LightSamlServiceProvider extends ServiceProvider
     {
         $this->app->bind(OwnContainer::OWN_CREDENTIALS, function (Application $app) {
             // TODO: Refactor to class
-            
+
             /** @var FilesystemManager $fs */
             $fs = $app->make(FilesystemManager::class);
             $drive = $fs->drive(config('saml.disk'));
@@ -205,24 +205,24 @@ class LightSamlServiceProvider extends ServiceProvider
 
     private function registerProvider()
     {
-        $this->app->bind(AttributeValueProviderBuilder::class, function (Application $app) {
-            return new AttributeValueProviderBuilder(
+        $this->app->bind(AttributeValueProviderFactory::class, function (Application $app) {
+            return new AttributeValueProviderFactory(
                 $app->make('auth.driver')
             );
         });
 
-        $this->app->bind(NameIdValueProviderBuilder::class, function (Application $app) {
+        $this->app->bind(NameIdValueProviderFactory::class, function (Application $app) {
             /** @var EntityDescriptorProviderInterface $ownEntityDescriptor */
             $ownEntityDescriptor = $app->make(OwnContainer::OWN_ENTITY_DESCRIPTOR_PROVIDER);
 
-            return new NameIdValueProviderBuilder(
+            return new NameIdValueProviderFactory(
                 $app->make('auth.driver'),
                 $ownEntityDescriptor->get()
             );
         });
 
         $this->app->bind(ProviderContainer::ATTRIBUTE_VALUE_PROVIDER, function (Application $app) {
-            return $app->make(AttributeValueProviderBuilder::class)->build();
+            return $app->make(AttributeValueProviderFactory::class)->build();
         });
 
         $this->app->bind(ProviderContainer::SESSION_INFO_PROVIDER, function () {
@@ -234,7 +234,7 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(ProviderContainer::NAME_ID_PROVIDER, function (Application $app) {
-            return $app->make(NameIdValueProviderBuilder::class)->build();
+            return $app->make(NameIdValueProviderFactory::class)->build();
         });
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\SAML2\Builder;
+namespace App\SAML2\Factory;
 
 use App\Entities\User;
 use Illuminate\Contracts\Auth\Guard;
@@ -8,7 +8,7 @@ use LightSaml\ClaimTypes;
 use LightSaml\Model\Assertion\Attribute;
 use LightSaml\Provider\Attribute\FixedAttributeValueProvider;
 
-class AttributeValueProviderBuilder
+class AttributeValueProviderFactory
 {
     /**
      * @var Guard

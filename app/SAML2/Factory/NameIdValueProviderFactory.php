@@ -1,6 +1,6 @@
 <?php
 
-namespace App\SAML2\Builder;
+namespace App\SAML2\Factory;
 
 use App\Entities\User;
 use Illuminate\Contracts\Auth\Guard;
@@ -9,7 +9,7 @@ use LightSaml\Model\Metadata\EntityDescriptor;
 use LightSaml\Provider\NameID\FixedNameIdProvider;
 use LightSaml\SamlConstants;
 
-class NameIdValueProviderBuilder
+class NameIdValueProviderFactory
 {
     /**
      * @var Guard
