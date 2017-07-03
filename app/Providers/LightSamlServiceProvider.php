@@ -67,6 +67,8 @@ class LightSamlServiceProvider extends ServiceProvider
     private function registerOwn()
     {
         $this->app->bind(OwnContainer::OWN_CREDENTIALS, function (Application $app) {
+            // TODO: Refactor to class
+            
             /** @var FilesystemManager $fs */
             $fs = $app->make(FilesystemManager::class);
             $drive = $fs->drive(config('saml.disk'));
@@ -81,6 +83,8 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(OwnContainer::OWN_ENTITY_DESCRIPTOR_PROVIDER, function (Application $app) {
+            // TODO: Refactor to class
+
             /** @var X509Credential[] $credentials */
             $credentials = $app->make(OwnContainer::OWN_CREDENTIALS);
 
@@ -91,8 +95,11 @@ class LightSamlServiceProvider extends ServiceProvider
                 $credentials[0]->getCertificate()
             );
 
+            // Workaround to add NameIDFormat to the IDP metadata response.
             $entityDescriptor = $builder->get();
             $entityDescriptor->getFirstIdpSsoDescriptor()->addNameIDFormat(SamlConstants::NAME_ID_FORMAT_EMAIL);
+
+            // TODO: Ability to configure contact persons
 
             return $builder;
         });
@@ -114,6 +121,10 @@ class LightSamlServiceProvider extends ServiceProvider
     private function registerParty()
     {
         $this->app->bind(PartyContainer::IDP_ENTITY_DESCRIPTOR, function () {
+            // At somepoint we can have this IDP act as an SP to be a proxy IDP.
+            // This would be the place to register the IDP's this app supports.
+            //
+            // We should probably have the SP's and IDP's using the same stores.
             return new FixedEntityDescriptorStore();
         });
 
@@ -125,6 +136,14 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(PartyContainer::TRUST_OPTIONS_STORE, function () {
+            // Eventually make this a CompositeTrustOptionsStore so that we can override
+            // the trust options for certain entities
+            //
+            // I think I saw somewhere, possibly Canvas LMS, that it never had any keys for encryption or signing
+            // which meant that you'd have to disable assertion encryption here.
+            //
+            // FWIW I could be mistaken in my understanding. Will have to verify by setting up Canvas
+            // and seeing if it works with this code.
             return new FixedTrustOptionsStore(new TrustOptions());
         });
     }
@@ -150,13 +169,13 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(ServiceContainer::ENDPOINT_RESOLVER, function () {
-            return new CompositeEndpointResolver(array(
+            return new CompositeEndpointResolver([
                 new BindingEndpointResolver(),
                 new DescriptorTypeEndpointResolver(),
                 new ServiceTypeEndpointResolver(),
                 new IndexEndpointResolver(),
                 new LocationEndpointResolver(),
-            ));
+            ]);
         });
 
         $this->app->bind(ServiceContainer::BINDING_FACTORY, function (Application $app) {
@@ -226,6 +245,8 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(StoreContainer::ID_STATE_STORE, function (Application $app) {
+            // Initial looks point it to only being needed for SP's in order to
+            // prevent replay attacks. Connect this to the cache?
             return new NullIdStore();
         });
 
@@ -241,6 +262,7 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(SystemContainer::SESSION, function (Application $app) {
+            // This looks wrong, how has it worked so far...?
             return $app->make(Session::class);
         });
 
@@ -249,6 +271,7 @@ class LightSamlServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(SystemContainer::EVENT_DISPATCHER, function () {
+            // TODO: Write a bridge to the laravel system?
             return new EventDispatcher();
         });
 
